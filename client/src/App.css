@@ -1,0 +1,60 @@
+.container {
+  padding: 10px 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.recipe_form {
+  border: 1px solid blue;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.recipe_form form {
+  border: 1px solid orange;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.recipe_form form input {
+  margin-bottom: 10px;
+}
+
+.recipe_form form select {
+  margin-bottom: 10px;
+}
+
+.display_recipes {
+  border: 1px solid green;
+  margin-bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.recipe_card {
+  border: 1px solid red;
+  max-width: 100px;
+  padding: 5px;
+  margin: 5px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.recipe_card ul {
+  padding: 0;
+  text-align: start;
+}
+
+.recipe_card button {
+  margin: 5px;
+  width: 80px;
+}
+
+li {
+  list-style-type: none;
+}
