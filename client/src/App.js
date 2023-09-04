@@ -9,7 +9,7 @@ const App = () => {
   const [currentValues, setCurrentValues] = useState(null);
 
   useEffect(() => {
-    fetch("/api/recipes")
+    fetch("http://localhost:5000/api/recipes")
       .then((res) => res.json())
       .then((data) => {
         setGetData(data);
@@ -19,7 +19,7 @@ const App = () => {
   // create new recipe in DB
   let handleCreate = async (event) => {
     try {
-      fetch("/api/recipes", {
+      fetch("http://localhost:5000/api/recipes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -35,7 +35,7 @@ const App = () => {
   // remove recipe from the DB
   let handleDelete = async (recipeID) => {
     try {
-      await fetch(`/api/recipes/${recipeID}`, {
+      await fetch(`http://localhost:5000/api/recipes/${recipeID}`, {
         method: "DELETE",
       });
       // Update the state by filtering out the deleted recipe
@@ -72,7 +72,7 @@ const App = () => {
     // send modified recipe to DB
     let handleSave = async () => {
       try {
-        fetch(`/api/recipes/${updatedRecipe._id}`, {
+        fetch(`http://localhost:5000/api/recipes/${updatedRecipe._id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
