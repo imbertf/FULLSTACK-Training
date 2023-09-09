@@ -3,39 +3,65 @@ import "./App.css";
 
 const App = () => {
   const [getData, setGetData] = useState([]);
-  const [recipeTitle, setRecipeTitle] = useState("");
-  const [recipeCategory, setRecipeCategory] = useState("");
+  const [formData, setFormData] = useState({
+    title: "",
+    category: "",
+    imageUrl: null,
+  });
+  // const [recipeTitle, setRecipeTitle] = useState("");
+  // const [recipeCategory, setRecipeCategory] = useState("");
+  // const [recipeImage, setRecipeImage] = useState("");
   const [openUpdateForm, setOpenUpdateForm] = useState(false);
   const [currentValues, setCurrentValues] = useState(null);
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/recipes")
+    fetch("/api/recipes")
       .then((res) => res.json())
       .then((data) => {
         setGetData(data);
       });
   }, []);
 
+  const handleChange = (event) => {
+    const { name, value } = event.target;
+    setFormData({
+      ...formData,
+      [name]: value,
+    });
+  };
+
+  const handleImageChange = (event) => {
+    const file = event.target.files[0];
+    setFormData({ ...formData, imageUrl: file });
+  };
+
   // create new recipe in DB
-  let handleCreate = async (event) => {
+  const handleSubmit = async (event) => {
+    const formDataToSend = new FormData();
+    formDataToSend.append("title", formData.title);
+    formDataToSend.append("category", formData.category);
+    formDataToSend.append("imageUrl", formData.imageUrl);
     try {
-      fetch("http://localhost:5000/api/recipes", {
+      console.log(formDataToSend);
+      const res = await fetch("http://localhost:5000/api/recipes", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          title: `${recipeTitle}`,
-          category: `${recipeCategory}`,
-        }),
+        body: formDataToSend,
       });
+
+      if (res.ok) {
+        console.log("Recipe added successfully!");
+      } else {
+        console.log("Error adding recipe");
+      }
     } catch (error) {
-      console.log(error);
+      console.error("Error", error);
     }
   };
 
   // remove recipe from the DB
   let handleDelete = async (recipeID) => {
     try {
-      await fetch(`http://localhost:5000/api/recipes/${recipeID}`, {
+      await fetch(`/api/recipes/${recipeID}`, {
         method: "DELETE",
       });
       // Update the state by filtering out the deleted recipe
@@ -72,7 +98,7 @@ const App = () => {
     // send modified recipe to DB
     let handleSave = async () => {
       try {
-        fetch(`http://localhost:5000/api/recipes/${updatedRecipe._id}`, {
+        fetch(`/api/recipes/${updatedRecipe._id}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -125,28 +151,39 @@ const App = () => {
   return (
     <div className="container">
       <section className="recipe_form">
-        <form onSubmit={handleCreate}>
+        <form onSubmit={handleSubmit}>
           <label htmlFor="title">Titre de la recette</label>
           <input
             type="text"
             name="title"
             id="title"
             placeholder="Entrez un titre"
-            value={recipeTitle}
-            onChange={(event) => setRecipeTitle(event.target.value)}
+            value={formData.title}
+            onChange={handleChange}
           ></input>
           <label htmlFor="category_options">Choix de la catégorie</label>
           <select
-            id="category_options"
-            value={recipeCategory}
-            onChange={(event) => setRecipeCategory(event.target.value)}
+            id="category"
+            name="category"
+            value={formData.category}
+            onChange={handleChange}
           >
-            <option value="">Choisisez la catégorie</option>
+            <option value="" disabled>
+              Choisisez la catégorie
+            </option>
             <option value="Entree">Entrée</option>
             <option value="Plat">Plat</option>
             <option value="Dessert">Dessert</option>
             <option value="Sauce">Sauce</option>
           </select>
+          <label htmlFor="image">Choisisez une image</label>
+          <input
+            type="file"
+            id="imageUrl"
+            name="imageUrl"
+            accept=".jpg, .jpeg, .png, .webp"
+            onChange={handleImageChange}
+          />
           <button type="submit">Ajouter</button>
         </form>
       </section>
@@ -157,6 +194,9 @@ const App = () => {
             <ul>
               <li>{recipe.category}</li>
             </ul>
+            <div className="image">
+              <img src={recipe.imageUrl} alt={recipe.title} />
+            </div>
             <button type="submit" onClick={() => handleUpdate(recipe._id)}>
               Modifier
             </button>

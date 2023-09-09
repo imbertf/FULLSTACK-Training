@@ -18,9 +18,12 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
+const multer = require("./middlewares/config-multer");
+const path = require("path");
 app.use(express.json());
 app.use(cors());
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use("/images", express.static(path.join(__dirname, "images")));
 
 // get all recipes
 app.get("/api/recipes", (req, res, next) => {
@@ -41,28 +44,25 @@ app.get("/api/recipes/:id", (req, res, next) => {
 });
 
 // create recipe
-app.post("/api/recipes", (req, res, next) => {
-  try {
-    const recipeObject = {
-      title: req.body.title,
-      category: req.body.category,
-    };
-    delete recipeObject._id;
-    const recipe = new Recipe({
-      ...recipeObject,
-    });
+app.post("/api/recipes", multer, (req, res, next) => {
+  const recipeObject = req.body;
+  // const recipeObject = JSON.parse(req.body.recipe);
+  delete recipeObject._id;
 
-    recipe
-      .save()
-      .then(() => {
-        res.status(201).json({ message: "Recipe added !" });
-      })
-      .catch((error) => {
-        res.status(400).json({ error });
-      });
-  } catch (error) {
-    res.status(400).json({ error: "Invalid JSON data" });
-  }
+  const recipe = new Recipe({
+    ...recipeObject,
+    imageUrl: `${req.protocol}://${req.get("host")}/images/${
+      req.file.filename
+    }`,
+  });
+  recipe
+    .save()
+    .then(() => {
+      res.status(201).json({ message: "Recipe added !" });
+    })
+    .catch((error) => {
+      res.status(400).json({ error });
+    });
 });
 
 // update recipe

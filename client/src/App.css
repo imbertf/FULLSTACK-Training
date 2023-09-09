@@ -36,7 +36,7 @@
 }
 .recipe_card {
   border: 1px solid red;
-  max-width: 100px;
+  max-width: 250px;
   padding: 5px;
   margin: 5px;
   display: flex;
@@ -53,6 +53,10 @@
 .recipe_card button {
   margin: 5px;
   width: 80px;
+}
+
+.image img {
+  width: 100%;
 }
 
 li {
