@@ -3,6 +3,7 @@ const cors = require("cors");
 const mongoose = require("mongoose");
 const app = express();
 const bodyParser = require("body-parser");
+const fs = require("fs");
 
 // DB
 const Recipe = require("./models/recipe");
@@ -46,7 +47,6 @@ app.get("/api/recipes/:id", (req, res, next) => {
 // create recipe
 app.post("/api/recipes", multer, (req, res, next) => {
   const recipeObject = req.body;
-  // const recipeObject = JSON.parse(req.body.recipe);
   delete recipeObject._id;
 
   const recipe = new Recipe({
@@ -66,10 +66,47 @@ app.post("/api/recipes", multer, (req, res, next) => {
 });
 
 // update recipe
-app.put("/api/recipes/:id", (req, res, next) => {
-  Recipe.updateOne({ _id: req.params.id }, { ...req.body, _id: req.params.id })
-    .then(() => res.status(200).json({ message: "Recipe updated !" }))
-    .catch((error) => res.status(400).json({ error }));
+app.put("/api/recipes/:id", multer, (req, res, next) => {
+  const recipeId = req.params.id;
+  const recipeObject = req.file
+    ? {
+        ...req.body,
+        imageUrl: `${req.protocol}://${req.get("host")}/images/${
+          req.file.filename
+        }`,
+      }
+    : { ...req.body };
+
+  Recipe.findOne({ _id: recipeId })
+    .then((recipe) => {
+      if (!recipe) {
+        return res.status(404).json({ error: "Recipe not found" });
+      }
+
+      Recipe.updateOne({ _id: recipeId }, { ...recipeObject, _id: recipeId })
+        .then(() => {
+          if (req.file) {
+            const filename = recipe.imageUrl.split("/images/")[1];
+            fs.unlink(`images/${filename}`, (err) => {
+              if (err) {
+                console.error(err);
+                return res
+                  .status(500)
+                  .json({ error: "Error deleting image file" });
+              }
+            });
+          }
+          res.status(200).json({ message: "Recipe modified!" });
+        })
+        .catch((error) => {
+          console.error(error);
+          res.status(500).json({ error: "Error modifying recipe" });
+        });
+    })
+    .catch((error) => {
+      console.error(error);
+      res.status(500).json({ error: "Error finding recipe" });
+    });
 });
 
 // delete recipe
